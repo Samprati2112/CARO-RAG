@@ -1,0 +1,47 @@
+# ==============================================================================
+# CARO RAG .gitignore
+# ==============================================================================
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python Cache & Build Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter Notebook Cache
+.ipynb_checkpoints/
+.jupyter/
+
+# Large Corpus & Index Binaries (> 100 MB GitHub limit)
+# Note: Full 250k corpus and indices can be downloaded or generated via scripts.
+data/raw/
+data/processed/*.jsonl
+data/processed/*.pkl
+indexes/hotpotqa/*.faiss
+indexes/hotpotqa/*.meta.json
+indexes/hotpotqa/*.pkl
+indexes/hotpotqa/*.npz
+
+# Keep evaluation results and benchmark summaries
+!eval/results/*.jsonl
+!eval/results/*.csv
+!eval/results/*.json
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local Scratch & Temporary Logs
+*.log
+scratch/

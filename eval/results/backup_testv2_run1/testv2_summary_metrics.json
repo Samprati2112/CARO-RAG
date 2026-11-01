@@ -1,0 +1,20 @@
+{
+  "total_evaluated_queries": 500,
+  "baseline_exact_match_count": 158,
+  "baseline_exact_match_pct": 31.6,
+  "baseline_mean_f1": 0.4083,
+  "baseline_mean_latency_s": 20.87,
+  "caro_exact_match_count": 106,
+  "caro_exact_match_pct": 21.2,
+  "caro_mean_f1": 0.2979,
+  "caro_mean_latency_s": 70.23,
+  "caro_mean_retrievals": 8.0,
+  "caro_abstention_count": 51,
+  "caro_abstention_pct": 10.2,
+  "head_to_head": {
+    "caro_wins": 40,
+    "baseline_wins": 106,
+    "ties": 354
+  },
+  "updated_at": "2026-10-24 11:05:15"
+}

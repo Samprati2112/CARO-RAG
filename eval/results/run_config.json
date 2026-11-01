@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-22T02:49:08.832631",
+  "seed": 42,
+  "sample_size": 500,
+  "smoke_mode": false,
+  "workers": 1,
+  "device": "cuda",
+  "llm_model": "gemma3:4b",
+  "judge_model": "llama3.1:8b",
+  "embedding_model": "BAAI/bge-m3",
+  "max_context_docs": 8,
+  "initial_top_k": 30,
+  "temperature": 0.0,
+  "caro_core_file_hash": "70d0d48dde060f0a560e204e0b80d7f827997ffa69740e1a53eabce427d4ed96",
+  "base_prompt_hash": "cffd44cfb4ef9729a36f2dff95ee052c65820e79e12c0cd2307e80ce3695f413",
+  "evaluated_systems": [
+    "B1_Dense",
+    "CARO"
+  ]
+}

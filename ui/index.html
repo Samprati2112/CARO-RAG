@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CARO RAG vs Baseline RAG - Comparative Evaluation Studio</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2338bdf8%22/><text x=%2250%%22 y=%2265%%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22%230b0f19%22>C</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+  <!-- Background Glow & Grid -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-branding">
+        <div class="header-title-wrap">
+          <h1>CARO RAG <span class="vs-pill">VS</span> Baseline RAG</h1>
+          <p class="header-subtitle">Side-by-Side Context-Aware Orchestration vs Dense Reference Benchmark</p>
+        </div>
+      </div>
+
+      <div class="header-telemetry">
+        <div class="telemetry-pill" id="telemetry-mode-pill">
+          <span class="pulse-dot green" id="mode-pulse-dot"></span>
+          <span class="label">Knowledge Base:</span>
+          <strong id="stat-corpus">250,000 Docs (HotpotQA)</strong>
+        </div>
+        <div class="telemetry-pill">
+          <span class="pulse-dot cyan"></span>
+          <span class="label">Dense Model:</span>
+          <strong>BAAI/bge-m3</strong>
+        </div>
+        <div class="telemetry-pill">
+          <span class="pulse-dot purple"></span>
+          <span class="label">LLM:</span>
+          <strong>Gemma-3:4b (Ollama)</strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="studio-nav">
+      <button class="nav-btn active" id="tab-evaluator-btn" onclick="switchTab('evaluator')">
+        Live Query Evaluator & Animation
+      </button>
+      <button class="nav-btn" id="tab-benchmark-btn" onclick="switchTab('benchmark')">
+        500-Query Thesis Benchmark Data
+      </button>
+      <button class="nav-btn" id="tab-architecture-btn" onclick="switchTab('architecture')">
+        Pipeline Architecture Comparison
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- TAB 1: LIVE QUERY EVALUATOR -->
+      <section id="tab-evaluator" class="tab-panel active">
+        <!-- Input & Search Container -->
+        <div class="query-card glass-panel">
+          <div class="query-header">
+            <div class="query-title">
+              <h3>Enter Question for Parallel RAG Comparison</h3>
+            </div>
+            <div class="corpus-mode-badge" id="corpus-mode-badge">
+              <span class="badge-icon">🌐</span>
+              <span class="badge-text" id="badge-mode-text">Corpus: 250,000 Wikipedia Docs</span>
+            </div>
+          </div>
+
+          <!-- Document Upload & Ingestion Drawer -->
+          <div class="doc-upload-container" id="doc-upload-container">
+            <div class="doc-dropzone" id="doc-dropzone" onclick="triggerFileInput()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+              <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.pptx,.ppt,.txt,.md,.csv,.json" style="display:none;" onchange="handleFileSelect(event)">
+              <div class="dropzone-content">
+                <div class="dropzone-icon">📁</div>
+                <div class="dropzone-text">
+                  <strong>Upload Your Own Documents</strong> (PDF, Word DOCX, PowerPoint PPTX, TXT, MD, CSV, JSON)
+                  <p class="dropzone-sub">Drop multiple files here or click to browse. CARO will answer from them; otherwise, defaults to 250,000 HotpotQA corpus.</p>
+                </div>
+                <button type="button" class="btn-browse" onclick="event.stopPropagation(); triggerFileInput()">+ Add Files</button>
+              </div>
+            </div>
+
+            <!-- Uploaded Files List -->
+            <div class="uploaded-files-bar hidden" id="uploaded-files-bar">
+              <div class="uploaded-header">
+                <span class="uploaded-title">Active Ingested Documents (<span id="uploaded-count">0</span>):</span>
+                <button type="button" class="btn-reset-corpus" onclick="clearUploadedDocuments()">
+                  <span>↺ Clear & Restore 250k Corpus</span>
+                </button>
+              </div>
+              <div class="file-chips-container" id="file-chips-container">
+                <!-- Dynamically populated file chips -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Input Form -->
+          <form id="query-form" onsubmit="handleQuerySubmit(event)">
+            <div class="input-group">
+              <input 
+                type="text" 
+                id="question-input" 
+                placeholder="Ask any question, or select a pre-evaluated benchmark query below..." 
+                autocomplete="off"
+                required
+              />
+              <button type="button" class="btn-clear" id="btn-clear" title="Clear input" onclick="clearInput()">X</button>
+              <button type="submit" class="btn-submit" id="btn-submit">
+                <span class="btn-text">Run Comparison</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Sample Quick Prompts -->
+          <div class="samples-container">
+            <div class="samples-label">
+              <span>Curated Benchmark Queries (Gold Truth Available):</span>
+            </div>
+            <div class="samples-pills" id="samples-pills">
+              <!-- Dynamically populated sample buttons -->
+              <div class="pill-skeleton">Loading benchmark samples...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global Gold Truth & Verdict Banner (Hidden initially) -->
+        <div id="verdict-banner" class="verdict-banner glass-panel hidden">
+          <div class="verdict-header">
+            <div class="verdict-badge" id="verdict-badge">Winner: CARO RAG</div>
+            <div class="gold-truth-pill" id="gold-truth-pill">
+              <span class="gold-label">Ground Truth (Gold):</span>
+              <strong id="gold-answer-text">Loading...</strong>
+            </div>
+          </div>
+          <p class="verdict-reason" id="verdict-reason">
+            CARO RAG demonstrated superior multi-hop reasoning by gathering supporting documents from separate articles.
+          </p>
+        </div>
+
+        <!-- Animation Pipelines & Output Section -->
+        <div class="comparison-grid">
+          
+          <!-- LEFT: BASELINE DENSE RAG -->
+          <div class="system-column baseline-col" id="col-baseline">
+            <div class="system-card glass-panel">
+              <div class="system-header">
+                <div class="system-title-wrap">
+                  <span class="system-tag baseline-tag">Module 2</span>
+                  <h2>Baseline Dense RAG</h2>
+                </div>
+                <div class="system-meta">FAISS Top-K Dense | Direct Gemma-3 4B</div>
+              </div>
+
+              <!-- Animated Pipeline Stepper -->
+              <div class="pipeline-stepper" id="baseline-stepper">
+                <div class="step-card" id="b-step-1">
+                  <div class="step-indicator">
+                    <span class="step-number">1</span>
+                    <span class="step-spinner"></span>
+                  </div>
+                  <div class="step-info">
+                    <div class="step-title">Loading Docs</div>
+                    <div class="step-desc">Loading FAISS dense vector store (250k documents)</div>
+                  </div>
+                  <div class="step-time" id="b-time-1">-</div>
+                </div>
+
+                <div class="step-card" id="b-step-2">
+                  <div class="step-indicator">
+                    <span class="step-number">2</span>
+                    <span class="step-spinner"></span>
+                  </div>
+                  <div class="step-info">
+                    <div class="step-title">Retrieving for Relevant Documents</div>
+                    <div class="step-desc">Single-pass dense embedding search (top_k=5)</div>
+                  </div>
+                  <div class="step-time" id="b-time-2">-</div>
+                </div>
+
+                <div class="step-card" id="b-step-3">
+                  <div class="step-indicator">
+                    <span class="step-number">3</span>
+                    <span class="step-spinner"></span>
+                  </div>
+                  <div class="step-info">
+                    <div class="step-title">Searching for Answer from n Docs</div>
+                    <div class="step-desc">Direct context pass-through (no evidence gate)</div>
+                  </div>
+                  <div class="step-time" id="b-time-3">-</div>
+                </div>
+
+                <div class="step-card" id="b-step-4">
+                  <div class="step-indicator">
+                    <span class="step-number">4</span>
+                    <span class="step-spinner"></span>
+                  </div>
+                  <div class="step-info">
+                    <div class="step-title">Generating Answer</div>
+                    <div class="step-desc">Standard LLM prompt synthesis (forced answer)</div>
+                  </div>
+                  <div class="step-time" id="b-time-4">-</div>
+                </div>
+              </div>
+
+              <!-- Generated Answer Card -->
+              <div class="answer-card" id="baseline-answer-card">
+                <div class="answer-header">
+                  <span class="answer-label">Generated Answer</span>
+                  <span class="match-pill" id="b-match-pill">Awaiting Query</span>
+                </div>
+                <div class="answer-content" id="b-answer-text">
+                  <p class="placeholder-text">Submit a query or select a sample question above to start evaluation.</p>
+                </div>
+                <div class="sources-list" id="b-sources-list"></div>
+              </div>
+
+              <!-- Metrics Section -->
+              <div class="metrics-deck" id="baseline-metrics">
+                <div class="metrics-title">Baseline Performance Metrics</div>
+                <div class="metrics-grid">
+                  <div class="metric-box">
+                    <span class="metric-label">Confidence</span>
+                    <div class="metric-val" id="b-metric-conf">--%</div>
+                    <div class="metric-sub">Vector Cosine Sim</div>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">Accuracy (EM)</span>
+                    <div class="metric-val" id="b-metric-acc">--</div>
+                    <div class="metric-sub">Exact Match</div>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">Precision (P@5)</span>
+                    <div class="metric-val" id="b-metric-prec">--%</div>
+                    <div class="metric-sub">Doc Precision</div>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">No. of Retrievals</span>
+                    <div class="metric-val" id="b-metric-ret">--</div>
+                    <div class="metric-sub">1 Dense Call</div>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">Quality of Answer</span>
+                    <div class="metric-val" id="b-metric-quality">--/100</div>
+                    <div class="metric-sub" id="b-metric-hallu">Hallucination Risk</div>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">Latency</span>
+                    <div class="metric-val" id="b-metric-lat">--s</div>
+                    <div class="metric-sub">Total Duration</div>
+                  </div>
+                </div>
+
+                <!-- Latency Timing Progress Bar -->
+                <div class="timing-breakdown">
+                  <div class="timing-bar" id="b-timing-bar">
+                    <div class="bar-segment seg-load" title="Loading" style="width: 5%"></div>
+                    <div class="bar-segment seg-ret" title="Retrieval" style="width: 25%"></div>
+                    <div class="bar-segment seg-gen" title="Generation" style="width: 70%"></div>
+                  </div>
+                  <div class="timing-legend">
+                    <span><i class="dot load"></i> Load</span>
+                    <span><i class="dot ret"></i> Retrieval</span>
+                    <span><i class="dot gen"></i> Gen</span>
+                  </div>
+                </div>
+
+                <!-- Toggle Documents -->
+                <button class="btn-toggle-docs" onclick="toggleDocs('baseline')">
+                  <span>View Retrieved Documents (<span id="b-docs-count">0</span>)</span>
+                  <span class="toggle-arrow" id="b-arrow"></span>
+                </button>
+                <div class="retrieved-docs-tray hidden" id="b-docs-tray"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: CARO RAG -->
+          <div class="system-column caro-col" id="col-caro">
+            <div class="system-card glass-panel caro-glass">
+              <div class="system-header">
+                <div class="system-title-wrap">
+                  <span class="system-tag caro-tag">CARO RAG</span>
+                  <h2>Context-Aware RAG</h2>
+                </div>
+                <div class="system-meta">Adaptive Router | Hybrid BM25/Dense | Evidence Gated</div>
+              </div>
+
+              <!-- Animated Pipeline Stepper -->
+              <div class="pipeline-stepper" id="caro-stepper">
+                <div class="step-card" id="c-step-1">
+                  <div class="step-indicator">
+                    <span class="step-number">1</span>
+                    <span class="step-spinner"></span>
+                  </div>
+                  <div class="step-info">
+                    <div class="step-title">Loading Docs</div>
+                    <div class="step-desc">Dual Index (FAISS Dense + CSR BM25) & Memory State</div>
+                  </div>
+                  <div class="step-time" id="c-time-1">-</div>
+                </div>
+
+                <div class="step-card" id="c-step-2">
+                  <div class="step-indicator">
+                    <span class="step-number">2</span>
+                    <span class="step-spinner"></span>
+                  </div>
+                  <div class="step-info">
+                    <div class="step-title">Retrieving for Relevant Documents</div>
+                    <div class="step-desc">Router + Multi-Hop Expansion + Reciprocal Rank Fusion</div>
+                  </div>
+                  <div class="step-time" id="c-time-2">-</div>
+                </div>
+
+                <div class="step-card" id="c-step-3">
+                  <div class="step-indicator">
+                    <span class="step-number">3</span>
+                    <span class="step-spinner"></span>
+                  </div>
+                  <div class="step-info">
+                    <div class="step-title">Searching for Answer from n Docs</div>
+                    <div class="step-desc">Cross-Evidence Sufficiency Judge & Missing Info Scan</div>
+                  </div>
+                  <div class="step-time" id="c-time-3">-</div>
+                </div>
+
+                <div class="step-card" id="c-step-4">
+                  <div class="step-indicator">
+                    <span class="step-number">4</span>
+                    <span class="step-spinner"></span>
+                  </div>
+                  <div class="step-info">
+                    <div class="step-title">Generating Answer</div>
+                    <div class="step-desc">Grounded Synthesis with Citation Attribution or Abstention</div>
+                  </div>
+                  <div class="step-time" id="c-time-4">-</div>
+                </div>
+              </div>
+
+              <!-- Generated Answer Card -->
+              <div class="answer-card caro-answer-card" id="caro-answer-card">
+                <div class="answer-header">
+                  <span class="answer-label">Generated Answer</span>
+                  <div class="header-badges">
+                    <span class="evidence-pill" id="c-evidence-pill">Pending</span>
+                    <span class="match-pill" id="c-match-pill">Awaiting Query</span>
+                  </div>
+                </div>
+                <div class="answer-content" id="c-answer-text">
+                  <p class="placeholder-text">Submit a query or select a sample question above to start evaluation.</p>
+                </div>
+                <div class="disclaimer-box hidden" id="c-disclaimer-box">
+                  <span class="disclaimer-icon">Notice:</span>
+                  <span class="disclaimer-text" id="c-disclaimer-text"></span>
+                </div>
+                <div class="sources-list" id="c-sources-list"></div>
+              </div>
+
+              <!-- Metrics Section -->
+              <div class="metrics-deck" id="caro-metrics">
+                <div class="metrics-title">CARO Performance Metrics</div>
+                <div class="metrics-grid">
+                  <div class="metric-box highlighted">
+                    <span class="metric-label">Confidence</span>
+                    <div class="metric-val" id="c-metric-conf">--%</div>
+                    <div class="metric-sub">Evidence Gated</div>
+                  </div>
+                  <div class="metric-box highlighted">
+                    <span class="metric-label">Accuracy (EM)</span>
+                    <div class="metric-val" id="c-metric-acc">--</div>
+                    <div class="metric-sub">Exact Match</div>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">Precision (P@5)</span>
+                    <div class="metric-val" id="c-metric-prec">--%</div>
+                    <div class="metric-sub">Doc Precision</div>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">No. of Retrievals</span>
+                    <div class="metric-val" id="c-metric-ret">--</div>
+                    <div class="metric-sub">Multi-Hop Passes</div>
+                  </div>
+                  <div class="metric-box highlighted">
+                    <span class="metric-label">Quality of Answer</span>
+                    <div class="metric-val" id="c-metric-quality">--/100</div>
+                    <div class="metric-sub" id="c-metric-hallu">Hallucination Risk</div>
+                  </div>
+                  <div class="metric-box">
+                    <span class="metric-label">Latency</span>
+                    <div class="metric-val" id="c-metric-lat">--s</div>
+                    <div class="metric-sub">Total Duration</div>
+                  </div>
+                </div>
+
+                <!-- Latency Timing Progress Bar -->
+                <div class="timing-breakdown">
+                  <div class="timing-bar" id="c-timing-bar">
+                    <div class="bar-segment seg-load" title="Loading" style="width: 2%"></div>
+                    <div class="bar-segment seg-ret" title="Retrieval" style="width: 35%"></div>
+                    <div class="bar-segment seg-eval" title="Searching / Sufficiency" style="width: 45%"></div>
+                    <div class="bar-segment seg-gen" title="Generation" style="width: 18%"></div>
+                  </div>
+                  <div class="timing-legend">
+                    <span><i class="dot load"></i> Load</span>
+                    <span><i class="dot ret"></i> Retrieval</span>
+                    <span><i class="dot eval"></i> Evidence Scan</span>
+                    <span><i class="dot gen"></i> Gen</span>
+                  </div>
+                </div>
+
+                <!-- Toggle Documents -->
+                <button class="btn-toggle-docs" onclick="toggleDocs('caro')">
+                  <span>View Retrieved Documents (<span id="c-docs-count">0</span>)</span>
+                  <span class="toggle-arrow" id="c-arrow"></span>
+                </button>
+                <div class="retrieved-docs-tray hidden" id="c-docs-tray"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Metric Head-to-Head Comparison Deck -->
+        <div class="comparison-summary-card glass-panel" id="head-to-head-card">
+          <div class="summary-header">
+            <h3>Direct Metric Head-to-Head Matrix</h3>
+            <span class="summary-sub">Detailed Dimension-by-Dimension Comparison</span>
+          </div>
+          <div class="comparison-table-wrap">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Evaluation Metric</th>
+                  <th>Baseline Dense RAG (Module 2)</th>
+                  <th>CARO RAG (Full Framework)</th>
+                  <th>Advantage / Verdict</th>
+                </tr>
+              </thead>
+              <tbody id="comparison-table-body">
+                <tr>
+                  <td><strong>Confidence Metric</strong></td>
+                  <td id="h2h-conf-base">--</td>
+                  <td id="h2h-conf-caro">--</td>
+                  <td id="h2h-conf-verdict">--</td>
+                </tr>
+                <tr>
+                  <td><strong>Accuracy (Exact Match)</strong></td>
+                  <td id="h2h-acc-base">--</td>
+                  <td id="h2h-acc-caro">--</td>
+                  <td id="h2h-acc-verdict">--</td>
+                </tr>
+                <tr>
+                  <td><strong>Precision (P@5)</strong></td>
+                  <td id="h2h-prec-base">--</td>
+                  <td id="h2h-prec-caro">--</td>
+                  <td id="h2h-prec-verdict">--</td>
+                </tr>
+                <tr>
+                  <td><strong>No. of Retrievals</strong></td>
+                  <td id="h2h-ret-base">--</td>
+                  <td id="h2h-ret-caro">--</td>
+                  <td id="h2h-ret-verdict">--</td>
+                </tr>
+                <tr>
+                  <td><strong>Quality & Hallucination Prevention</strong></td>
+                  <td id="h2h-qual-base">--</td>
+                  <td id="h2h-qual-caro">--</td>
+                  <td id="h2h-qual-verdict">--</td>
+                </tr>
+                <tr>
+                  <td><strong>Latency (Execution Time)</strong></td>
+                  <td id="h2h-lat-base">--</td>
+                  <td id="h2h-lat-caro">--</td>
+                  <td id="h2h-lat-verdict">--</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: BENCHMARK DATA -->
+      <section id="tab-benchmark" class="tab-panel">
+        <div class="glass-panel benchmark-panel">
+          <div class="benchmark-header">
+            <h2>500-Query Benchmark Reconciliation & Thesis Findings</h2>
+            <p>Verified head-to-head empirical metrics on the HotpotQA 250,000-document multi-hop benchmark.</p>
+          </div>
+
+          <div class="stats-overview-grid">
+            <div class="stat-card">
+              <span class="stat-num">500</span>
+              <span class="stat-title">Evaluated Queries</span>
+              <span class="stat-desc">Seed 42 Answerable Subset</span>
+            </div>
+            <div class="stat-card highlight-cyan">
+              <span class="stat-num">98</span>
+              <span class="stat-title">CARO Safe Abstentions</span>
+              <span class="stat-desc">19.6% Hallucination Elimination</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">77.9% vs 73.4%</span>
+              <span class="stat-title">Doc Recall@5</span>
+              <span class="stat-desc">Baseline vs CARO High Recall</span>
+            </div>
+            <div class="stat-card highlight-purple">
+              <span class="stat-num">25.0s vs 64.5s</span>
+              <span class="stat-title">Mean Latency</span>
+              <span class="stat-desc">Direct vs 8-Stage Orchestration</span>
+            </div>
+          </div>
+
+          <div class="reconciliation-table-wrap">
+            <table class="reconciliation-table" id="summary-table">
+              <thead>
+                <tr>
+                  <th>Dimension / Metric</th>
+                  <th>Baseline Dense RAG</th>
+                  <th>CARO RAG (Full)</th>
+                  <th>Delta</th>
+                  <th>Analytical Research Interpretation</th>
+                </tr>
+              </thead>
+              <tbody id="summary-table-body">
+                <!-- Loaded from API -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: PIPELINE ARCHITECTURE -->
+      <section id="tab-architecture" class="tab-panel">
+        <div class="glass-panel architecture-panel">
+          <div class="arch-header">
+            <h2>Detailed Pipeline Architecture Comparison</h2>
+            <p>How Baseline Dense RAG and CARO RAG process multi-hop questions through distinct stages.</p>
+          </div>
+
+          <div class="arch-cards-grid">
+            <div class="arch-card baseline-arch">
+              <div class="arch-badge">Module 2 Architecture</div>
+              <h3>Baseline Dense RAG</h3>
+              <p class="arch-intro">A traditional, unconstrained top-k dense retrieval pipeline.</p>
+              
+              <ul class="arch-flow">
+                <li>
+                  <span class="flow-num">1</span>
+                  <div class="flow-body">
+                    <strong>User Query Input:</strong> Query is passed directly to the dense embedder without routing or complexity analysis.
+                  </div>
+                </li>
+                <li>
+                  <span class="flow-num">2</span>
+                  <div class="flow-body">
+                    <strong>Dense Vector Embedding:</strong> BAAI/bge-m3 encodes the full query string into a 1024-dimensional dense representation.
+                  </div>
+                </li>
+                <li>
+                  <span class="flow-num">3</span>
+                  <div class="flow-body">
+                    <strong>FAISS Flat Index Search:</strong> Retrieves Top-5 nearest neighbors from 250k document vectors in a single pass.
+                  </div>
+                </li>
+                <li>
+                  <span class="flow-num">4</span>
+                  <div class="flow-body">
+                    <strong>Direct Prompt Generation:</strong> All 5 passages are placed in the prompt and passed to Gemma-3:4B with no verification.
+                  </div>
+                </li>
+                <li>
+                  <span class="flow-num">5</span>
+                  <div class="flow-body">
+                    <strong>Unconditional Output:</strong> Always forces an answer, resulting in hallucinated names or entities when multi-hop links are missing.
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="arch-card caro-arch">
+              <div class="arch-badge caro-badge">CARO RAG Architecture</div>
+              <h3>CARO Context-Aware Orchestration</h3>
+              <p class="arch-intro">A multi-stage adaptive orchestration pipeline with evidence gating.</p>
+
+              <ul class="arch-flow">
+                <li>
+                  <span class="flow-num">1</span>
+                  <div class="flow-body">
+                    <strong>Adaptive Query Router (Module 3):</strong> Classifies whether the query requires retrieval or can be answered directly, identifying multi-hop dependencies.
+                  </div>
+                </li>
+                <li>
+                  <span class="flow-num">2</span>
+                  <div class="flow-body">
+                    <strong>Query Expansion & Decomposition:</strong> Decomposes complex questions into intermediate bridge queries and sub-queries.
+                  </div>
+                </li>
+                <li>
+                  <span class="flow-num">3</span>
+                  <div class="flow-body">
+                    <strong>Hybrid Dense + Sparse Fusion:</strong> Executes 8 parallel retrieval passes across FAISS dense vectors and BM25 postings, fused with Reciprocal Rank Fusion (RRF k=60).
+                  </div>
+                </li>
+                <li>
+                  <span class="flow-num">4</span>
+                  <div class="flow-body">
+                    <strong>Evidence Sufficiency Judge (Module 7):</strong> Checks if retrieved passages provide complete, partial, or insufficient facts before generating.
+                  </div>
+                </li>
+                <li>
+                  <span class="flow-num">5</span>
+                  <div class="flow-body">
+                    <strong>Grounded Synthesis / Safe Abstention:</strong> Emits citation anchors ([1], [2]), includes disclaimers on partial evidence, or safely abstains to eliminate hallucinations.
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>CARO RAG Research Evaluation Suite | 250k Corpus FAISS + BM25 | Gemma 3 4B</p>
+    </footer>
+  </div>
+
+  <script src="app.js?v=4"></script>
+</body>
+</html>

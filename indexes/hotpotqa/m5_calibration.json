@@ -1,0 +1,68 @@
+{
+  "DENSE": {
+    "strategy": "DENSE",
+    "threshold": 0.23715270908869213,
+    "objective": "maximum micro-F1 over pooled calibrated retrieval scores; ties choose the highest threshold",
+    "calibration_query_count": 128,
+    "calibration_candidate_count": 1280,
+    "positive_candidate_count": 240,
+    "selected_candidate_count": 297,
+    "precision": 0.5589225589225589,
+    "recall": 0.6916666666666667,
+    "f1": 0.6182495344506518,
+    "data_source": "data/processed/hotpotqa_documents.jsonl",
+    "corpus_limit": 5000,
+    "score_model": {
+      "mean": 0.48597641091328114,
+      "scale": 0.07739648847886182,
+      "slope": 1.6159663187729143,
+      "intercept": -2.005426664331426
+    }
+  },
+  "SPARSE": {
+    "strategy": "SPARSE",
+    "threshold": 0.22989079627757902,
+    "objective": "maximum micro-F1 over pooled calibrated retrieval scores; ties choose the highest threshold",
+    "calibration_query_count": 128,
+    "calibration_candidate_count": 1280,
+    "positive_candidate_count": 217,
+    "selected_candidate_count": 230,
+    "precision": 0.3826086956521739,
+    "recall": 0.4055299539170507,
+    "f1": 0.39373601789709173,
+    "data_source": "data/processed/hotpotqa_documents.jsonl",
+    "corpus_limit": 5000,
+    "score_model": {
+      "mean": 26.933331816905035,
+      "scale": 13.314393237865612,
+      "slope": 0.6806432329947943,
+      "intercept": -1.7163151991714123
+    }
+  },
+  "HYBRID": {
+    "strategy": "HYBRID",
+    "threshold": 0.18717440855761464,
+    "objective": "maximum micro-F1 over pooled calibrated fusion scores; ties choose the highest threshold",
+    "calibration_query_count": 128,
+    "calibration_candidate_count": 1868,
+    "positive_candidate_count": 245,
+    "selected_candidate_count": 322,
+    "precision": 0.5124223602484472,
+    "recall": 0.673469387755102,
+    "f1": 0.5820105820105821,
+    "data_source": "data/processed/hotpotqa_documents.jsonl",
+    "corpus_limit": 5000,
+    "score_model": {
+      "dense_weight": 0.5,
+      "sparse_weight": 0.5,
+      "dense_mean": 0.48597641091328114,
+      "dense_scale": 0.07739648847886182,
+      "dense_slope": 1.6159663187729143,
+      "dense_intercept": -2.005426664331426,
+      "sparse_mean": 26.933331816905035,
+      "sparse_scale": 13.314393237865612,
+      "sparse_slope": 0.6806432329947943,
+      "sparse_intercept": -1.7163151991714123
+    }
+  }
+}
