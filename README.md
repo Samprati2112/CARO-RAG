@@ -81,7 +81,6 @@ The project includes an **Interactive Comparative Evaluation Studio (Web UI)** a
 
 The project includes an interactive web application that provides real-time comparative analysis between **Baseline Dense RAG** and **CARO RAG**:
 
-![Comparative UI](eval/results/figures/figure7_comparative_performance.png)
 
 ### Features:
 - **Side-by-Side Dual Engine:** Runs queries through both Baseline RAG and CARO RAG concurrently, highlighting differences in answer grounding and evidence processing.
